@@ -4,8 +4,9 @@ import Grid2 from "@mui/material/Unstable_Grid2/Grid2";
 import { ICountries } from "../../services/countries";
 import { Autocomplete, TextField } from "@mui/material";
 import { getLeagues } from '../../services/leagues';
-// import { useGetSeasons } from '../../shared/hooks/seasons';
-// import { useGetCountries } from "../../shared/hooks/countries";
+import { useGetCountries } from "../../shared/hooks/countries";
+import { useGetSeasons } from '../../shared/hooks/seasons';
+
 
 const mokCountries: ICountries[] = [
   {
@@ -36,9 +37,10 @@ const Home = () => {
   const [selectedCountry, setSelectedCountry] = useState<string | null>();
   const [selectedSeason, setSelectedSeason] = useState<number | null>();
 
-  // const { data: countries } = useGetCountries();
-  // const { data: seasons } = useGetSeasons();
-  const { mutate, data } = useMutation(
+  const { data: countries } = useGetCountries();
+  const { data: seasons } = useGetSeasons();
+
+  const { mutate: setTeamName, data: laguesAndSeasons } = useMutation(
     (teamName: string) => getLeagues(teamName),
     {
       onSuccess: () => {
@@ -50,10 +52,19 @@ const Home = () => {
     }
   )
 
-  console.log(data);
+  const optionCountries = useMemo(() => {
+    if (countries) {
+      const allContries = countries.map(country => country.name);
+      return allContries
+    }
+    const allContries = mokCountries.map(country => country.name);
+    return allContries
+  }, [countries])
 
-  const optionCountries = useMemo(() => mokCountries.map(countrie => countrie.name), []);
-  const optionSeasons = useMemo(() => mockSeason.map(season => season), []);
+  const optionSeasons = useMemo(() => {
+    if (seasons) return seasons
+    return mockSeason
+  }, [seasons]);
 
   return (
     <Grid2>
@@ -68,8 +79,8 @@ const Home = () => {
                 setSelectedCountry(newValue);
                 setSelectedSeason(newValue);
               } else {
+                setTeamName(newValue)
                 setSelectedCountry(newValue);
-                mutate(newValue)
               }
             }}
             options={optionCountries}
@@ -88,9 +99,15 @@ const Home = () => {
             sx={{ width: 220 }}
             disablePortal
             value={selectedSeason}
-            disabled={!selectedCountry?.length ? true : false}
+            disabled={!selectedCountry?.length && !laguesAndSeasons ? true : false}
             options={optionSeasons}
-            onChange={(_event, newValue) => setSelectedSeason(newValue)}
+            onChange={(_event, newValue) => {
+              if (typeof newValue === 'number') {
+                setSelectedSeason(newValue)
+              } else {
+                setSelectedSeason(newValue)
+              }
+            }}
             renderInput={
               (params) =>
                 <TextField

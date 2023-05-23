@@ -1,8 +1,30 @@
 import { API, config } from "../API";
+import { ICountries } from "../countries";
 
-export const getLeagues = async (teamName: string): Promise<any> => {
+interface ISeasons {
+  current: boolean;
+  end: string;
+  start: string;
+  year: number;
+}
+
+interface ILeagues {
+  id: number;
+  logo: string;
+  name: string;
+  type: string;
+}
+
+export interface iLeaguesAndSeasons {
+  country: ICountries[];
+  league: ILeagues[];
+  seasons: ISeasons[];
+
+}
+
+export const getLeagues = async (teamName: string): Promise<iLeaguesAndSeasons[]> => {
   try {
-    const { data } = await API.get(`leagues?country=${teamName}`, config)
+    const { data } = await API.get(`leagues?search=${teamName}`, config)
     return data.response
   } catch (error: any) {
     throw new Error(error)
