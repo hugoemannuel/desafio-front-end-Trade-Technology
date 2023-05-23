@@ -56,15 +56,13 @@ const Home = () => {
     if (countries) {
       const allContries = countries.map(country => country.name);
       return allContries
+    } else {
+      const allContries = mokCountries.map(country => country.name);
+      return allContries
     }
-    const allContries = mokCountries.map(country => country.name);
-    return allContries
   }, [countries])
 
-  const optionSeasons = useMemo(() => {
-    if (seasons) return seasons
-    return mockSeason
-  }, [seasons]);
+  const optionSeasons = useMemo(() => (seasons ? seasons : mockSeason), [seasons]);
 
   return (
     <Grid2>
