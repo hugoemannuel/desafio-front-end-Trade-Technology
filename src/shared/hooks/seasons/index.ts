@@ -2,5 +2,5 @@ import { useQuery } from "react-query";
 import { getSeasons } from "../../../services/seasons";
 
 
-export const useGetSeasons = () =>
-  useQuery(['Seasons'], () => getSeasons());
+export const useGetSeasons = (apiKey?: string) =>
+  useQuery(['Seasons'], () => getSeasons(apiKey));

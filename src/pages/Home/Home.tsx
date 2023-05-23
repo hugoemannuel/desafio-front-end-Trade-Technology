@@ -1,12 +1,12 @@
-import { useMemo, useState } from 'react';
+import { useContext, useMemo, useState } from 'react';
 import { useMutation } from "react-query";
 import Grid2 from "@mui/material/Unstable_Grid2/Grid2";
+import { ToastContainer, toast } from 'react-toastify';
 import { ICountries } from "../../services/countries";
 import { Autocomplete, TextField } from "@mui/material";
 import { getLeagues } from '../../services/leagues';
-import { useGetCountries } from "../../shared/hooks/countries";
 import { useGetSeasons } from '../../shared/hooks/seasons';
-
+import LoginContext from '../../shared/context/LoginContext';
 
 const mokCountries: ICountries[] = [
   {
@@ -35,19 +35,19 @@ const mockSeason: number[] = [2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015]
 
 const Home = () => {
   const [selectedCountry, setSelectedCountry] = useState<string | null>();
+  const { apiKey, countries } = useContext(LoginContext);
   const [selectedSeason, setSelectedSeason] = useState<number | null>();
 
-  const { data: countries } = useGetCountries();
-  const { data: seasons } = useGetSeasons();
+  const { data: seasons } = useGetSeasons(apiKey);
 
   const { mutate: setTeamName, data: laguesAndSeasons } = useMutation(
-    (teamName: string) => getLeagues(teamName),
+    (teamName: string) => getLeagues(teamName, apiKey),
     {
-      onSuccess: () => {
-        console.log('***deu bom')
-      },
-      onError: (error) => {
-        console.log('***error', error)
+      onError: () => {
+        toast.error('Nao foi possivel trazer as ligas', {
+          position: toast.POSITION.TOP_RIGHT,
+          autoClose: 4000,
+        })
       }
     }
   )
@@ -117,6 +117,7 @@ const Home = () => {
           />
         </Grid2>
       </Grid2>
+      <ToastContainer />
     </Grid2>
   )
 }
