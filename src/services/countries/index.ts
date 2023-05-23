@@ -9,7 +9,7 @@ export interface ICountries {
 export const getCountries = async (): Promise<ICountries[]> => {
   try {
     const { data } = await API.get('countries', config)
-    return data
+    return data.response
   } catch (error: any) {
     throw new Error(error)
   }
