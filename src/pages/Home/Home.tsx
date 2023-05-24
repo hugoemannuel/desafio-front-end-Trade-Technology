@@ -234,11 +234,11 @@ const Home = () => {
       {teams ?
         teams.map(team => (
           <CardCustom
-            key={team.id}
-            id={team.id}
+            key={team.team.id}
+            id={team.team.id}
             handleClick={handleClickCard}
-            img={team.logo}
-            name={team.name}
+            img={team.team.logo}
+            name={team.team.name}
           />
         ))
         : <h1>Carregando ...</h1>}

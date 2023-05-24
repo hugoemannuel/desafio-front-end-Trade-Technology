@@ -26,7 +26,7 @@ export interface ITeams {
 }
 
 
-export const getTeams = async (apiKey?: string, league?: number, season?: null | number): Promise<ITeam[]> => {
+export const getTeams = async (apiKey?: string, league?: number, season?: null | number): Promise<ITeams[]> => {
   try {
     const { data } = await API.get(`teams?league=${Number(league)}&season=${Number(season)}`, config(apiKey));
     return data.response
