@@ -16,8 +16,8 @@ interface ILeagues {
 }
 
 export interface iLeaguesAndSeasons {
-  country: ICountries[];
-  league: ILeagues[];
+  country: ICountries;
+  league: ILeagues;
   seasons: ISeasons[];
 
 }
