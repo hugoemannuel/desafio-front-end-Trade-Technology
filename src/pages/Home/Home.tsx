@@ -5,9 +5,11 @@ import { ToastContainer, toast } from 'react-toastify';
 import { ICountries } from "../../services/countries";
 import { Autocomplete, TextField } from "@mui/material";
 import { getLeagues, iLeaguesAndSeasons } from '../../services/leagues';
-// import { useGetSeasons } from '../../shared/hooks/seasons';
+import { useGetSeasons } from '../../shared/hooks/seasons';
 import LoginContext from '../../shared/context/LoginContext';
-// import { useNavigate } from 'react-router-dom';
+import { getTeams } from '../../services/teams';
+import { useNavigate } from 'react-router-dom';
+import CardCustom from '../../shared/components/Card/CardCustom';
 
 const mokCountries: ICountries[] = [
   {
@@ -33,8 +35,6 @@ const mokCountries: ICountries[] = [
 ]
 
 const mockSeason: number[] = [2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015];
-
-// Albania - 2008;
 
 const mockLeagues: iLeaguesAndSeasons[] = [
   {
@@ -94,53 +94,71 @@ const mockLeagues: iLeaguesAndSeasons[] = [
 ]
 
 const Home = () => {
-  // const navigate = useNavigate();
-  // const { apiKey, countries } = useContext(LoginContext);
+  const navigate = useNavigate();
+  const { apiKey, countries } = useContext(LoginContext);
   const [selectedCountry, setSelectedCountry] = useState<string | null>();
   const [selectedSeason, setSelectedSeason] = useState<number | null>();
   const [selectedLeague, setSelectedLeague] = useState<string | null>();
-  const [leagueId, setLeagueId] = useState<number>()
 
-  // const { data: seasons } = useGetSeasons(apiKey);
+  const { data: seasons } = useGetSeasons(apiKey);
 
-  // const { mutate: setTeamName, data: laguesAndSeasons } = useMutation(
-  //   (teamName: string) => getLeagues(teamName, apiKey),
-  //   {
-  //     onError: () => {
-  //       toast.error('Nao foi possivel trazer as ligas', {
-  //         position: toast.POSITION.TOP_RIGHT,
-  //         autoClose: 4000,
-  //       })
-  //     }
-  //   }
-  // )
+  const { mutate: setTeamName, data: leagues } = useMutation(
+    (teamName: string) => getLeagues(teamName, apiKey),
+    {
+      onError: () => {
+        toast.error('Nao foi possivel trazer as ligas', {
+          position: toast.POSITION.TOP_RIGHT,
+          autoClose: 4000,
+        })
+      }
+    }
+  )
+
+  const { mutate: handleGetTeams, data: teams } = useMutation(
+    (leagueId?: number) => getTeams(apiKey, leagueId, selectedSeason),
+    {
+      onError: () => {
+        toast.error('Nao foi possivel trazer os Times', {
+          position: toast.POSITION.TOP_RIGHT,
+          autoClose: 4000,
+        })
+      }
+    }
+  )
 
   const optionCountries = useMemo(() => {
-    // if (countries) {
-    //   const allContries = countries.map(country => country.name);
-    //   return allContries
-    // } else {
-    //   const allContries = mokCountries.map(country => country.name);
-    //   return allContries
-    // }
-    const allContries = mokCountries.map(country => country.name);
-    return allContries
-  }, [])
+    if (countries) {
+      const allContries = countries.map(country => country.name);
+      return allContries
+    }
+    return mokCountries.map(country => country.name)
 
-  const optionSeasons = useMemo(() => mockSeason, []);
+  }, [countries])
 
-  const optionsLeagues = useMemo(() => mockLeagues.map(league => league.league.name), []);
+  const optionSeasons = useMemo(() => seasons ? seasons : mockSeason, [seasons]);
+
+  const optionsLeagues = useMemo(() => {
+    if (leagues) {
+      return leagues.map(league => league.league.name)
+    }
+    return ['']
+  }, [leagues]);
 
   const handleChangeLeague = useCallback((newValue: string | null) => {
-    if (typeof newValue === 'string') {
-      const findLeagueId = mockLeagues.find(league => league.league.name === newValue)?.league.id;
-      setLeagueId(findLeagueId)
+    if (typeof newValue === 'string' && leagues) {
+      setSelectedLeague(newValue)
+      const findLeagueId = leagues.find(league => league.league.name === newValue)?.league.id;
+
+      handleGetTeams(findLeagueId)
     }
-  }, [])
+    setSelectedLeague(newValue)
 
-  console.log('***leagueId', leagueId)
+  }, [handleGetTeams, leagues])
 
-  // useEffect(() => { if (!apiKey) navigate('/') }, [apiKey, navigate])
+
+  const handleClickCard = useCallback((id: number) => navigate(`/team/${id}`), [navigate])
+
+  useEffect(() => { if (!apiKey) navigate('/') }, [apiKey, navigate])
 
   return (
     <Grid2 xs={12}>
@@ -155,7 +173,7 @@ const Home = () => {
                 setSelectedCountry(newValue);
                 setSelectedSeason(newValue);
               } else {
-                // setTeamName(newValue)
+                setTeamName(newValue)
                 setSelectedCountry(newValue);
               }
             }}
@@ -213,6 +231,17 @@ const Home = () => {
           />
         </Grid2>
       </Grid2>
+      {teams ?
+        teams.map(team => (
+          <CardCustom
+            key={team.id}
+            id={team.id}
+            handleClick={handleClickCard}
+            img={team.logo}
+            name={team.name}
+          />
+        ))
+        : <h1>Carregando ...</h1>}
       <ToastContainer />
     </Grid2>
   )

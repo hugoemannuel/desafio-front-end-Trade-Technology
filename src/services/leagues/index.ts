@@ -24,7 +24,7 @@ export interface iLeaguesAndSeasons {
 
 export const getLeagues = async (teamName: string, apiKey?: string): Promise<iLeaguesAndSeasons[]> => {
   try {
-    const { data } = await API.get(`leagues?search=${teamName}`, config(apiKey))
+    const { data } = await API.get(`/leagues?search=${teamName}`, config(apiKey))
     return data.response
   } catch (error: any) {
     throw new Error(error)
